@@ -4,6 +4,7 @@ import Button from "./ui/Button";
 import logo from "../assets/logo spiltm black.png"; 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import axios from "axios";
 
 const CertificateOfPurchase = () => {
   const [customerName, setCustomerName] = useState("");
@@ -11,6 +12,10 @@ const CertificateOfPurchase = () => {
   const [orderNumber, setOrderNumber] = useState("");
   const [PurchaseDate , setPurchaseDate ] = useState("");
   const [quantityPurchased, setQuantityPurchased] = useState("");
+  const [phoneNumber , setPhoneNumber] = useState("");
+  const [customerCity , setCustomerCity] = useState("");
+  const currentDate = new Date().toLocaleString();
+
   const handleDownloadPDF = () => {
     const input = document.getElementById("certificate");
   
@@ -26,12 +31,30 @@ const CertificateOfPurchase = () => {
         const imgWidth = 170;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
   
-        // حساب x لجعل الصورة في منتصف الصفحة
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const x = (pageWidth - imgWidth) / 2; // بدء الصورة من المنتصف
+        const x = (pageWidth - imgWidth) / 2;
   
         pdf.addImage(imgData, "PNG", x, 0, imgWidth, imgHeight);
         pdf.save("certificate_of_purchase.pdf");
+
+  
+        const pdfBlob = pdf.output("blob");
+  
+        const formData = new FormData();
+        formData.append("file", pdfBlob, "certificate_of_purchase.pdf");
+        formData.append("name", customerName); 
+  
+        axios.post("http://localhost:300/app/pdf/upload_pdf", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          console.log("File uploaded successfully:", response.data);
+        })
+        .catch((error) => {
+          console.error("Error uploading file:", error);
+        });
       });
     }
   };
@@ -45,6 +68,16 @@ const CertificateOfPurchase = () => {
             placeholder="Customer Name"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
+          />
+          <Input
+            placeholder="Phone Number"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+           <Input
+            placeholder="Customer City"
+            value={customerCity}
+            onChange={(e) => setCustomerCity(e.target.value)}
           />
           <Input
             placeholder="Product Name"
@@ -72,14 +105,14 @@ const CertificateOfPurchase = () => {
       </div>
       <div id="certificate" className="max-w-lg mx-auto p-6 border border-gray-300 rounded-lg shadow-lg">
         <div className="text-right text-gray-500 text-xs sm:text-sm">
-          2024-08-10 15:32
+        {currentDate}
         </div>
         <h1 className="text-xl sm:text-2xl font-bold text-left my-4">
           Certificate of Purchase
         </h1>
         <p className="text-base sm:text-lg my-4 text-left">
-          This is to certify that <span className="font-bold">Mr. {customerName}</span>, 
-          residing in Riyadh and contactable at phone number <a href="tel:0500815617" className="text-blue-600 underline">0500815617</a>, 
+          This is to certify that <span className="font-bold">{customerName}</span>, 
+          residing in {customerCity} and contactable at phone number <a href="tel:0500815617" className="text-blue-600 underline">{phoneNumber}</a>, 
           has purchased the following product from our Spiltm:
         </p>
         <ul className="text-base sm:text-lg mb-4 text-left">
@@ -89,7 +122,7 @@ const CertificateOfPurchase = () => {
           <li><span className="font-bold">Quantity Purchased:</span> {quantityPurchased}</li>
         </ul>
         <p className="text-base sm:text-lg my-4 text-left">
-          The full payment for this purchase has been received from <span className="font-bold">Mr. {customerName}</span>, 
+          The full payment for this purchase has been received from <span className="font-bold">{customerName}</span>, 
           and the requested product has been provided to him.
         </p>
         <p className="text-base sm:text-lg my-4 text-left">
