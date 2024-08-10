@@ -26,8 +26,8 @@ const CertificateOfPurchase = () => {
         This certificate serves as the official proof of the completed purchase transaction between our Spiltm and him.
       </p>
       <p className="text-base sm:text-lg my-4 text-left">Please accept our highest regards.</p>
-      <div className="text-right mt-8">
-        <span className="text-2xl sm:text-3xl font-bold italic">Spiltm</span>
+      <div className="  flex justify-end">
+        <img className="w-28 h-28 sm:w-36 sm:h-36  " src="https://i.top4top.io/p_31442o4cw0.png"/>
       </div>
     </div>
   );
