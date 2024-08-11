@@ -27,23 +27,33 @@ const CertificateOfPurchase = () => {
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF({
           orientation: "portrait",
-          unit: "mm",
-          format: "a4",
+          unit: "px",
+          format: [canvas.width, canvas.height] // استخدم أبعاد الصورة لتنسيق الصفحة
         });
   
-        const imgWidth = 170;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgHeight = canvas.height; // ارتفاع الصورة
+        const pageWidth = pdf.internal.pageSize.width;
+        const pageHeight = pdf.internal.pageSize.height;
   
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const x = (pageWidth - imgWidth) / 2;
+        // حساب الطول والعرض بحيث تتناسب الصورة مع الصفحة
+        let yOffset = 0;
+        let remainingHeight = imgHeight;
   
-        pdf.addImage(imgData, "PNG", x, 0, imgWidth, imgHeight);
+        while (remainingHeight > 0) {
+          pdf.addImage(imgData, "PNG", 0, yOffset, pageWidth, Math.min(pageHeight, remainingHeight));
+          remainingHeight -= pageHeight;
+          yOffset -= pageHeight;
+  
+          if (remainingHeight > 0) {
+            pdf.addPage(); // أضف صفحة جديدة إذا كان هناك المزيد من المحتوى
+          }
+        }
   
         const pdfBlob = pdf.output("blob");
   
         const formData = new FormData();
         formData.append("file", pdfBlob);
-        formData.append("name", customerName); 
+        formData.append("name", customerName);
         setIsLoading(true);
   
         axios.post("https://ecommerce-backend-377z.onrender.com/app/pdf/upload_pdf", formData, {
@@ -63,9 +73,11 @@ const CertificateOfPurchase = () => {
       });
     }
   };
+  
+  
 
   return (
-    <div className="min-h-screen flex items-center justify-center flex-wrap">
+    <div className="min-h-screen flex items-center gap- justify-center flex-wrap">
       <div className="max-w-lg mx-auto p-6 border border-gray-300 rounded-lg shadow-lg mt-6">
         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <Input
