@@ -4,8 +4,9 @@ import Button from "./ui/Button";
 import logo from "../assets/logo spiltm black.png"; 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import axios from "axios";
 import DisplayCertificate from "./DisplayCertficate";
+import axioInstance from "./config/config.instance";
+import { successmsg } from "../toastifiy";
 
 const CertificateOfPurchase = () => {
   const [customerName, setCustomerName] = useState("");
@@ -20,24 +21,28 @@ const CertificateOfPurchase = () => {
   const [updateCer , setUpdateCer] = useState(0);
 
   const handleDownloadPDF = () => {
+    setIsLoading(true);
     const input = document.getElementById("certificate");
   
     if (input) {
       html2canvas(input, { scale: 2 }).then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
+  
+        // تحديد أبعاد مخصصة للـ PDF
+        const pdfWidth = canvas.width * 0.75; // تصغير العرض بنسبة 75%
+        const pdfHeight = canvas.height * 0.75; // تصغير الطول بنسبة 75%
+  
         const pdf = new jsPDF({
           orientation: "portrait",
           unit: "px",
-          format: [canvas.width, canvas.height] // استخدم أبعاد الصورة لتنسيق الصفحة
+          format: [pdfWidth, pdfHeight] // استخدم الأبعاد الجديدة لتنسيق الصفحة
         });
   
-        const imgHeight = canvas.height; // ارتفاع الصورة
         const pageWidth = pdf.internal.pageSize.width;
         const pageHeight = pdf.internal.pageSize.height;
   
-        // حساب الطول والعرض بحيث تتناسب الصورة مع الصفحة
         let yOffset = 0;
-        let remainingHeight = imgHeight;
+        let remainingHeight = pdfHeight;
   
         while (remainingHeight > 0) {
           pdf.addImage(imgData, "PNG", 0, yOffset, pageWidth, Math.min(pageHeight, remainingHeight));
@@ -54,16 +59,24 @@ const CertificateOfPurchase = () => {
         const formData = new FormData();
         formData.append("file", pdfBlob);
         formData.append("name", customerName);
-        setIsLoading(true);
   
-        axios.post("https://ecommerce-backend-377z.onrender.com/app/pdf/upload_pdf", formData, {
+        axioInstance.post("/app/pdf/upload_pdf", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         })
         .then((response) => {
           console.log("File uploaded successfully:", response.data);
+          successmsg({msg:"Certificate uploaded successfully"})
           setIsLoading(false);
+          setCustomerName("");
+          setProductName("");
+          setOrderNumber("");
+          setPurchaseDate("");
+          setQuantityPurchased("");
+          setPhoneNumber("");
+          setCustomerCity("");
+
           setUpdateCer(prev => prev + 1); // تحديث البيانات بعد الإضافة
         })
         .catch((error) => {
@@ -73,7 +86,6 @@ const CertificateOfPurchase = () => {
       });
     }
   };
-  
   
 
   return (
