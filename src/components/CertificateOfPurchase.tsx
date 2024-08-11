@@ -5,6 +5,7 @@ import logo from "../assets/logo spiltm black.png";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import axios from "axios";
+import DisplayCertificate from "./DisplayCertficate";
 
 const CertificateOfPurchase = () => {
   const [customerName, setCustomerName] = useState("");
@@ -15,6 +16,8 @@ const CertificateOfPurchase = () => {
   const [phoneNumber , setPhoneNumber] = useState("");
   const [customerCity , setCustomerCity] = useState("");
   const currentDate = new Date().toLocaleString();
+  const [isLoading, setIsLoading] = useState(false);
+  const [updateCer , setUpdateCer] = useState(0);
 
   const handleDownloadPDF = () => {
     const input = document.getElementById("certificate");
@@ -35,30 +38,31 @@ const CertificateOfPurchase = () => {
         const x = (pageWidth - imgWidth) / 2;
   
         pdf.addImage(imgData, "PNG", x, 0, imgWidth, imgHeight);
-        pdf.save("certificate_of_purchase.pdf");
-
   
         const pdfBlob = pdf.output("blob");
   
         const formData = new FormData();
-        formData.append("file", pdfBlob, "certificate_of_purchase.pdf");
+        formData.append("file", pdfBlob);
         formData.append("name", customerName); 
+        setIsLoading(true);
   
-        axios.post("http://localhost:300/app/pdf/upload_pdf", formData, {
+        axios.post("https://ecommerce-backend-377z.onrender.com/app/pdf/upload_pdf", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         })
         .then((response) => {
           console.log("File uploaded successfully:", response.data);
+          setIsLoading(false);
+          setUpdateCer(prev => prev + 1); // تحديث البيانات بعد الإضافة
         })
         .catch((error) => {
           console.error("Error uploading file:", error);
+          setIsLoading(false);
         });
       });
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center flex-wrap">
@@ -100,7 +104,7 @@ const CertificateOfPurchase = () => {
             value={quantityPurchased}
             onChange={(e) => setQuantityPurchased(e.target.value)}
           />
-          <Button onClick={handleDownloadPDF}>Download PDF</Button>
+          <Button isloading={isLoading} onClick={handleDownloadPDF}>Upload PDF</Button>
         </form>
       </div>
       <div id="certificate" className="max-w-lg mx-auto p-6 border border-gray-300 rounded-lg shadow-lg">
@@ -133,6 +137,8 @@ const CertificateOfPurchase = () => {
           <img className="w-28 h-28 sm:w-36 sm:h-36" src={logo} alt="Company Logo"/>
         </div>
       </div>
+      <DisplayCertificate updateKey={updateCer}/>
+
     </div>
   );
 };
