@@ -28,14 +28,13 @@ const CertificateOfPurchase = () => {
       html2canvas(input, { scale: 2 }).then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
   
-        // تحديد أبعاد مخصصة للـ PDF
-        const pdfWidth = canvas.width * 0.75; // تصغير العرض بنسبة 75%
-        const pdfHeight = canvas.height * 0.75; // تصغير الطول بنسبة 75%
+        const pdfWidth = canvas.width * 0.75;
+        const pdfHeight = canvas.height * 0.75;
   
         const pdf = new jsPDF({
           orientation: "portrait",
           unit: "px",
-          format: [pdfWidth, pdfHeight] // استخدم الأبعاد الجديدة لتنسيق الصفحة
+          format: [pdfWidth, pdfHeight] 
         });
   
         const pageWidth = pdf.internal.pageSize.width;
@@ -50,7 +49,7 @@ const CertificateOfPurchase = () => {
           yOffset -= pageHeight;
   
           if (remainingHeight > 0) {
-            pdf.addPage(); // أضف صفحة جديدة إذا كان هناك المزيد من المحتوى
+            pdf.addPage(); 
           }
         }
   

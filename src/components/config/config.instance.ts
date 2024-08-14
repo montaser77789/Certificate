@@ -1,6 +1,6 @@
 import axios from "axios";
 
 const axioInstance = axios.create({
-  baseURL: "https://ecommerce-backend-377z.onrender.com",
+  baseURL: "https://cert.spiltm.com",
 });
 export default axioInstance;
